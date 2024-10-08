@@ -10,6 +10,12 @@ CREATE TABLE jobs (
       done boolean not null default false
 );
 
+CREATE TABLE jobs_chats (
+    id serial not null unique,
+    chat_id int references chats (id) on delete cascade not null,
+    job_id int references jobs (id) on delete cascade not null
+);
+
 CREATE TABLE members (
      id serial not null unique,
      name TEXT NOT NULL

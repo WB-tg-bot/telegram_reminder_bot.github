@@ -1,3 +1,6 @@
+-- Удаление таблицы jobs_chats
+DROP TABLE IF EXISTS jobs_chats;
+
 -- Удаление таблицы jobs_members
 DROP TABLE IF EXISTS jobs_members;
 
