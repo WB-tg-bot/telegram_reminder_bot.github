@@ -1,0 +1,11 @@
+docker run --name tg-bot-db -e POSTGRES_PASSWORD='secret' -p 5436:5432 -d --rm postgres
+
+migrate -path ./schema -database 'postgres://postgres:secret@0.0.0.0:5436/postgres?sslmode=disable' up
+
+docker exec -it tg-bot-db /bin/bash
+	psql -U postgres
+		update schema_migrations set version='000001', dirty=false;
+	exit
+exit
+
+migrate -path ./schema -database 'postgres://postgres:secret@0.0.0.0:5436/postgres?sslmode=disable' down
