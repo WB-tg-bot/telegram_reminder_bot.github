@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -27,11 +28,11 @@ func InitScheduler() {
 }
 
 // Фунция для планирования задачи
-func ScheduleTask(chatID int64, task string, interval int, uint string, username string) {
+func ScheduleTask(chatID int64, task string, interval int, unit string, username string) {
 	var cronExpr string // Переменная для хранения выражения cron
 
 	// Определяем выражение cron в зависимости от единицы измерения
-	switch uint {
+	switch unit {
 	case "h": // Если указан час
 		cronExpr = "@every" + time.Duration(interval).String() + "h"
 	case "d": // Если указан день
@@ -41,7 +42,7 @@ func ScheduleTask(chatID int64, task string, interval int, uint string, username
 	case "mo": // Если указан месяц
 		cronExpr = "@every" + time.Duration(interval*30).String() + "d"
 	default:
-		//fmt.Errorf("Incorrect value", cronExpr)
+		//fmt.Errorf("Incorrect value", cronExpr) - нужно добавить логику обработки ошибки, я написал как пример, можете развить дальше))
 		return // Если единица не распознана, выходим из функции
 
 	}
@@ -57,4 +58,19 @@ func SendReminder(chatID int64, task string, username string) {
 	message := "Напоминание: @" + username + " " + task // Формируем сообщение
 	// Здесь нужно реализовать логику отправки сообщения через Telegram API
 	fmt.Println(message) // Это сделанно для того, что бы убрать ошибку))).
+}
+
+func StopScheduler() {
+	// Тут нужно описать логику остановки планировщика.
+}
+
+// Функция для удаления задачи по ID
+func DeleteTask(taskID string) error {
+	// Логика для удаления задачи
+	// Если задача не найдена, можно вернуть ошибку
+	if taskID == "" {
+		return errors.New("task ID cannot be empty")
+	}
+	// Здесь нужно добавить код для фактического удаления задачи.
+	return nil // Возрващаем ошибку если удаление не удалось
 }

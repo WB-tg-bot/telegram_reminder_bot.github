@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  todo-app:
+    build: ./
+    command: ./wait-for-postgres.sh db ./telegram_reminder_bot
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=secret
+
+  db:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - 5436:5432
