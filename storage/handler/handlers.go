@@ -18,10 +18,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
 	router.POST("/create-task", h.createTask)
-	router.GET("/get-all-tasks", h.getAllTasks)
-	router.GET("/get-task-by-id", h.getTaskById)
-	router.PATCH("/update-task", h.updateTask)
-	router.DELETE("/delete-task", h.deleteTask)
+	router.GET("/tasks", h.Tasks)
 
 	return router
 }

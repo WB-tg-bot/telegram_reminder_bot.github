@@ -1,9 +1,13 @@
 package service
 
-import "telegram_reminder_bot/repository"
+import (
+	"telegram_reminder_bot/models"
+	"telegram_reminder_bot/repository"
+)
 
 type Task interface {
-	Create(chatID int64, task string, interval int, unit string, username string) error
+	CreateTask(models.Task) error
+	Tasks() ([]models.Task, error)
 }
 
 type Service struct {

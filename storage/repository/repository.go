@@ -1,12 +1,14 @@
 package repository
 
 import (
+	"telegram_reminder_bot/models"
+
 	"github.com/jmoiron/sqlx"
 )
 
 type Task interface {
-	Create(chatID int64, task string, interval int, unit string, username string) error
-	//GetAll() []Tasks
+	CreateTask(models.Task) error
+	Tasks() ([]models.Task, error)
 }
 
 type Repository struct {
@@ -15,6 +17,6 @@ type Repository struct {
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		Task: NewTaskPostrgres(db),
+		Task: NewTaskPostgres(db),
 	}
 }
