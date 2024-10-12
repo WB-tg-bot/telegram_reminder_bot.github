@@ -14,6 +14,6 @@ RUN chmod +x wait-for-postgres.sh
 
 # build go app
 RUN go mod download
-RUN go build -o telegram_reminder_bot ./cmd/main.go
+RUN go build -o telegram-reminder-bot ./cmd/main.go
 
-CMD ["./telegram_reminder_bot"]
+CMD ["./telegram-reminder-bot"]
