@@ -24,24 +24,35 @@ func main() {
 		log.Fatal("TELEGRAM_BOT_TOKEN is not set in .env file")
 	}
 
-	bot := bot.NewBot(botToken)
+	tgBot := bot.NewBot(botToken)
 
-	bot.Debug = true
+	tgBot.Debug = true
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates := bot.GetUpdatesChan(u)
+	updates := tgBot.GetUpdatesChan(u)
 
-	re := regexp.MustCompile(`@\w+ ctrl (\d+)([a-z]{1})`)
+	re := regexp.MustCompile(`@\w+ ctrl (\d+)([a-z])`)
 
 	msgs := make(map[int64]string)
 
+	tgBot.RestoreTasks()
+
 	for update := range updates {
+		if update.MyChatMember != nil {
+			tgBot.HandleMyChatMemberUpdate(update.MyChatMember)
+			continue
+		}
+
 		if re.Match([]byte(update.Message.Text)) {
-			go bot.HandleCommand(update.Message, msgs[update.Message.From.ID])
+			go tgBot.HandleCommand(update.Message, msgs[update.Message.From.ID])
 		} else {
 			msgs[update.Message.From.ID] = update.Message.Text
 		}
+
 	}
+
+	select {}
+
 }

@@ -11,15 +11,11 @@ import (
 	"syscall"
 	"telegram_reminder_bot/handler"
 	"telegram_reminder_bot/repository"
-	"telegram_reminder_bot/scheduler"
 	"telegram_reminder_bot/server"
 	"telegram_reminder_bot/service"
 )
 
 func main() {
-	// Запускаем сервер планировщика задач
-	scheduler.InitScheduler()
-
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 
 	if err := initConfig(); err != nil {
@@ -37,6 +33,7 @@ func main() {
 		DBName:   viper.GetString("db.dbname"),
 		SSLMode:  viper.GetString("db.sslmode"),
 		Password: os.Getenv("DB_PASSWORD"),
+		TIMEZONE: viper.GetString("db.timezone"),
 	})
 	if err != nil {
 		logrus.Fatalf("failed to initialize db: %s", err.Error())

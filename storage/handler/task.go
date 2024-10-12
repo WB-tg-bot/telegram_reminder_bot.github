@@ -16,6 +16,7 @@ func (h *Handler) createTask(c *gin.Context) {
 	if err := h.services.Task.CreateTask(input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Task created"})
 }
 

@@ -1,17 +1,20 @@
 port: "8000"
 
 
-# db:
-#   username: "postgres"
-#   # host: "db"
-#   host: "localhost"
-#   port: "5436"
-#   dbname: "postgres"
-#   sslmode: "disable"
-
 db:
   username: "postgres"
-  host: "localhost"
-  port: "5432"
-  dbname: "reminder"
+  host: "db"
+  #host: "localhost"
+  port: "5436"
+  dbname: "postgres"
   sslmode: "disable"
+  timezone: "Europe/Moscow"
+  # timezone: "America/Los_Angeles"
+
+
+#db:
+  #username: "postgres"
+  #host: "localhost"
+  #port: "5432"
+  #dbname: "reminder"
+  #sslmode: "disable"

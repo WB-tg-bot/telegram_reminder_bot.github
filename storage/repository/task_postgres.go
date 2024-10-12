@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"log"
 	"telegram_reminder_bot/models"
 
 	"github.com/jmoiron/sqlx"
@@ -15,16 +16,17 @@ func NewTaskPostgres(db *sqlx.DB) *TaskPostgres {
 }
 
 func (r *TaskPostgres) CreateTask(task models.Task) error {
-	_, err := r.db.Exec("INSERT INTO tasks (user_id, chat_id, content, reminder_time) VALUES ($1, $2, $3, $4)", task.UserID, task.ChatID, task.Content, task.ReminderTime)
+	_, err := r.db.Exec("INSERT INTO tasks (username, chat_id, content, reminder_time) VALUES ($1, $2, $3, $4)", task.UserName, task.ChatID, task.Content, task.ReminderTime)
 	if err != nil {
 		return err
 	}
 
+	log.Printf("Created task with username %s and chatID %d", task.UserName, task.ChatID)
 	return nil
 }
 
 func (r *TaskPostgres) Tasks() ([]models.Task, error) {
-	rows, err := r.db.Queryx("SELECT user_id, chat_id, content, reminder_time FROM tasks WHERE reminder_time <= NOW()")
+	rows, err := r.db.Queryx("SELECT username, chat_id, content, reminder_time FROM tasks WHERE reminder_time <= NOW()")
 	if err != nil {
 		return nil, err
 	}
@@ -33,16 +35,19 @@ func (r *TaskPostgres) Tasks() ([]models.Task, error) {
 
 	for rows.Next() {
 		var task models.Task
-		err := rows.Scan(&task.UserID, &task.ChatID, &task.Content, &task.ReminderTime)
+		err := rows.Scan(&task.UserName, &task.ChatID, &task.Content, &task.ReminderTime)
 		if err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, task)
 	}
+	log.Printf("Found %d tasks", len(tasks))
 
 	if err = r.deleteTasks(tasks); err != nil {
 		return nil, err
 	}
+
+	log.Printf("Deleted %d tasks", len(tasks))
 	return tasks, nil
 }
 
@@ -52,7 +57,7 @@ func (r *TaskPostgres) deleteTasks(tasks []models.Task) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare(`DELETE FROM tasks WHERE user_id = $1 AND chat_id = $2 AND content = $3 AND reminder_time = $4`)
+	stmt, err := tx.Prepare(`DELETE FROM tasks WHERE username = $1 AND chat_id = $2 AND content = $3 AND reminder_time = $4`)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -60,7 +65,7 @@ func (r *TaskPostgres) deleteTasks(tasks []models.Task) error {
 	defer stmt.Close()
 
 	for _, task := range tasks {
-		_, err := stmt.Exec(task.UserID, task.ChatID, task.Content, task.ReminderTime)
+		_, err := stmt.Exec(task.UserName, task.ChatID, task.Content, task.ReminderTime)
 		if err != nil {
 			tx.Rollback()
 			return err

@@ -5,32 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4028e366-0f0c-40e1-ade2-2878ba4a6b8a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/telegram_reminder_bot.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/config.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handler/handlers.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handler/response.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handler/task.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/models.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/postgres.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/repository.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/repository/task_postgres.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scheduler/scheduler.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/schema/000001_init.down.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/schema/000001_init.up.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/service.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/task.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/wait-for-postgres.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/work with db.txt" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/storage/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/.env" beforeDir="false" afterPath="$PROJECT_DIR$/storage/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/storage/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/cmd/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/configs/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/storage/configs/config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/storage/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/handler/task.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/handler/task.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/models/models.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/models/models.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/repository/postgres.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/repository/postgres.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/repository/task_postgres.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/repository/task_postgres.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/scheduler/scheduler.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/schema/000001_init.down.sql" beforeDir="false" afterPath="$PROJECT_DIR$/storage/schema/000001_init.down.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/schema/000001_init.up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/storage/schema/000001_init.up.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/storage/wait-for-postgres.sh" beforeDir="false" afterPath="$PROJECT_DIR$/storage/wait-for-postgres.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tg-bot/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/tg-bot/cmd/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tg-bot/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/tg-bot/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tg-bot/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/tg-bot/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tg-bot/models/bot/bot.go" beforeDir="false" afterPath="$PROJECT_DIR$/tg-bot/models/bot/bot.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,10 +36,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 7
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Ktuty"
+  }
 }]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/WB-tg-bot/telegram_reminder_bot.github.git",
+    "accountId": "23afc40f-0ce0-4d6b-a839-657258a5dbec"
+  }
+}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2nGQykU0MmPQHVFn9c6CfQ1CDmk" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -60,10 +67,11 @@
     "git-widget-placeholder": "develop",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "C:/Users/LK10725",
+    "last_opened_file_path": "C:/Users/User/GolandProjects/github.com/TeamDev/telegram_reminder_bot.github",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm"
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "go.vgo"
   }
 }]]></component>
   <component name="RunManager">
