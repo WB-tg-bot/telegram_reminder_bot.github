@@ -3,8 +3,7 @@ build:
 
 
 run:
-	docker-compose up telegram-reminder-bot
-
+	docker-compose up --build
 
 test:
 	go test -v ./...
@@ -20,3 +19,4 @@ migrate:
 
 un_migrate:
 	migrate -path ./schema -database 'postgres://postgres:secret@0.0.0.0:5436/postgres?sslmode=disable' down
+
