@@ -15,6 +15,28 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+/*
+var (
+	menu = tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Добавить напоминание")))
+
+	timeKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("секунды", "s"),
+			tgbotapi.NewInlineKeyboardButtonData("часы", "h"),
+		),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("дни", "d"),
+			tgbotapi.NewInlineKeyboardButtonData("недели", "w"),
+		),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("месяцы", "m"),
+		),
+	)
+)
+*/
+
 type Bot struct {
 	*tgbotapi.BotAPI
 }
@@ -27,6 +49,59 @@ func NewBot(token string) *Bot {
 	return &Bot{bot}
 }
 
+/*
+	func (b *Bot) MarkupHandler(chat tgbotapi.Chat, user tgbotapi.User, updates tgbotapi.UpdatesChannel) {
+		msg := tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, введите текст вашего напоминания", user.UserName))
+		_, err := b.Send(msg)
+		if err != nil {
+			log.Println(err)
+		}
+
+		var taskText string
+		var time string
+		var quantity string
+
+		re := regexp.MustCompile(`[shdwm]`)
+		reQuantity := regexp.MustCompile(`\d+`)
+
+		for update := range updates {
+			if update.Message.Text != "" && update.Message.From.ID == user.ID {
+				if taskText == "" {
+					taskText = update.Message.Text
+					msg = tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, выберите единицу времени:", user.UserName))
+					msg.ReplyMarkup = timeKeyboard
+					_, err = b.Send(msg)
+					if err != nil {
+						log.Println(err)
+					}
+				} else if time == "" {
+					if re.MatchString(update.Message.Text) {
+						time = update.Message.Text
+						msg = tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, введите продолжительность (целым числом)", user.UserName))
+						_, err = b.Send(msg)
+						if err != nil {
+							log.Println(err)
+						}
+					}
+				} else if quantity == "" {
+					if reQuantity.MatchString(update.Message.Text) {
+						quantity = update.Message.Text
+						break
+					}
+				}
+			}
+		}
+
+		inputText := fmt.Sprintf("@%s ctrl %s%s", b.Self.UserName, quantity, time)
+		input := tgbotapi.Message{
+			Chat: &chat,
+			From: &user,
+			Text: inputText,
+		}
+
+		b.HandleCommand(&input, taskText)
+	}
+*/
 func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 	args := strings.Split(message.Text, " ")
 	if len(args) < 3 || args[1] != "ctrl" {
@@ -85,7 +160,8 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 		return
 	}
 
-	resp, err := http.Post("http://localhost:8000/create-task", "application/json", bytes.NewBuffer(taskJSON))
+	resp, err := http.Post("http://telegram-reminder-bot:8000/create-task", "application/json", bytes.NewBuffer(taskJSON))
+	// resp, err := http.Post("http://localhost:8000/create-task", "application/json", bytes.NewBuffer(taskJSON))
 	if err != nil {
 		log.Println("Error sending user to server: ", err)
 		return
@@ -118,7 +194,8 @@ func (b *Bot) RestoreTasks() {
 
 	_, err := c.AddFunc("@every 1s", func() {
 
-		resp, err := http.Get("http://localhost:8000/tasks")
+		resp, err := http.Get("http://telegram-reminder-bot:8000/tasks")
+		// resp, err := http.Get("http://localhost:8000/tasks")
 		if err != nil {
 			log.Println("Error getting tasks from server: ", err)
 			return
@@ -159,14 +236,21 @@ func (b *Bot) HandleMyChatMemberUpdate(myChatMember *tgbotapi.ChatMemberUpdated)
 				"\nЯ напомню вам о ней через указанное время."+
 				"\n\n[число] - интервал (целое число)"+
 				"\n[время] - продолжительность \n"+
-				"\n•s - секунды, \n•h -часы, \n•d - дни, \n•w - недели, \n•m - месяцы",
+				"\n• s - секунды, \n• h -часы, \n• d - дни, \n• w - недели, \n• m - месяцы",
 				b.Self.UserName, b.Self.UserName)
 			msg := tgbotapi.NewMessage(myChatMember.Chat.ID, messageText)
 			_, err := b.Send(msg)
 			if err != nil {
 				log.Println(err)
 			}
-
+			/*
+				msg = tgbotapi.NewMessage(myChatMember.Chat.ID, "Пожалуйста, выберите опцию:")
+				msg.ReplyMarkup = menu
+				_, err = b.Send(msg)
+				if err != nil {
+					log.Println(err)
+				}
+			*/
 		default:
 
 		}
