@@ -1,0 +1,9 @@
+<changelist name="Uncommitted_changes_before_Update_at_12_10_2024_7_32_[Changes]" date="1728707596000" recycled="true" deleted="true">
+  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_12_10_2024_7_32_[Changes]/shelved.patch" />
+  <option name="DESCRIPTION" value="Uncommitted changes before Update at 12.10.2024 7:32 [Changes]" />
+  <binary>
+    <option name="BEFORE_PATH" value="tg-bot/.env" />
+    <option name="AFTER_PATH" value="tg-bot/cmd/.env" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_12_10_2024_7_32_[Changes]/.env" />
+  </binary>
+</changelist>

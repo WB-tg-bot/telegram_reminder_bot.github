@@ -5,27 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4028e366-0f0c-40e1-ade2-2878ba4a6b8a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/storage/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/.env" beforeDir="false" afterPath="$PROJECT_DIR$/storage/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/storage/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/storage/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/cmd/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/configs/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/storage/configs/config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/storage/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/handler/task.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/handler/task.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/models/models.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/models/models.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/repository/postgres.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/repository/postgres.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/repository/task_postgres.go" beforeDir="false" afterPath="$PROJECT_DIR$/storage/repository/task_postgres.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/scheduler/scheduler.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/schema/000001_init.down.sql" beforeDir="false" afterPath="$PROJECT_DIR$/storage/schema/000001_init.down.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/schema/000001_init.up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/storage/schema/000001_init.up.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/wait-for-postgres.sh" beforeDir="false" afterPath="$PROJECT_DIR$/storage/wait-for-postgres.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tg-bot/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/tg-bot/cmd/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tg-bot/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/tg-bot/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tg-bot/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/tg-bot/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tg-bot/models/bot/bot.go" beforeDir="false" afterPath="$PROJECT_DIR$/tg-bot/models/bot/bot.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,19 +16,8 @@
   <component name="GOROOT" url="file://$PROJECT_DIR$/../../../pkg/mod/golang.org/toolchain@v0.0.1-go1.22.4.windows-amd64" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "Ktuty"
-  }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/WB-tg-bot/telegram_reminder_bot.github.git",
-    "accountId": "23afc40f-0ce0-4d6b-a839-657258a5dbec"
-  }
-}]]></component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 7
@@ -67,13 +37,17 @@
     "git-widget-placeholder": "develop",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "C:/Users/User/GolandProjects/github.com/TeamDev/telegram_reminder_bot.github",
+    "last_opened_file_path": "C:/Users/LK10725/go/src/Anastasia/telegram_reminder_bot.github/storage",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "go.vgo"
+    "nodejs_package_manager_path": "npm"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\LK10725\go\src\Anastasia\telegram_reminder_bot.github\tg-bot" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="go build tg-bot/cmd" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="telegram_reminder_bot.github" />
@@ -110,12 +84,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/tg-bot/models/bot/bot.go</url>
-          <line>25</line>
+          <line>30</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/tg-bot/cmd/main.go</url>
-          <line>14</line>
+          <line>15</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
