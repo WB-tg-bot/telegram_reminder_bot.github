@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,30 +11,10 @@ import (
 	"tg-bot/models/tasks"
 	"time"
 
+	"github.com/robfig/cron/v3"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
-
-/*
-var (
-	menu = tgbotapi.NewReplyKeyboard(
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("Добавить напоминание")))
-
-	timeKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("секунды", "s"),
-			tgbotapi.NewInlineKeyboardButtonData("часы", "h"),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("дни", "d"),
-			tgbotapi.NewInlineKeyboardButtonData("недели", "w"),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("месяцы", "m"),
-		),
-	)
-)
-*/
 
 type Bot struct {
 	*tgbotapi.BotAPI
@@ -49,59 +28,6 @@ func NewBot(token string) *Bot {
 	return &Bot{bot}
 }
 
-/*
-	func (b *Bot) MarkupHandler(chat tgbotapi.Chat, user tgbotapi.User, updates tgbotapi.UpdatesChannel) {
-		msg := tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, введите текст вашего напоминания", user.UserName))
-		_, err := b.Send(msg)
-		if err != nil {
-			log.Println(err)
-		}
-
-		var taskText string
-		var time string
-		var quantity string
-
-		re := regexp.MustCompile(`[shdwm]`)
-		reQuantity := regexp.MustCompile(`\d+`)
-
-		for update := range updates {
-			if update.Message.Text != "" && update.Message.From.ID == user.ID {
-				if taskText == "" {
-					taskText = update.Message.Text
-					msg = tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, выберите единицу времени:", user.UserName))
-					msg.ReplyMarkup = timeKeyboard
-					_, err = b.Send(msg)
-					if err != nil {
-						log.Println(err)
-					}
-				} else if time == "" {
-					if re.MatchString(update.Message.Text) {
-						time = update.Message.Text
-						msg = tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, введите продолжительность (целым числом)", user.UserName))
-						_, err = b.Send(msg)
-						if err != nil {
-							log.Println(err)
-						}
-					}
-				} else if quantity == "" {
-					if reQuantity.MatchString(update.Message.Text) {
-						quantity = update.Message.Text
-						break
-					}
-				}
-			}
-		}
-
-		inputText := fmt.Sprintf("@%s ctrl %s%s", b.Self.UserName, quantity, time)
-		input := tgbotapi.Message{
-			Chat: &chat,
-			From: &user,
-			Text: inputText,
-		}
-
-		b.HandleCommand(&input, taskText)
-	}
-*/
 func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 	args := strings.Split(message.Text, " ")
 	if len(args) < 3 || args[1] != "ctrl" {
@@ -114,6 +40,7 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 
 	value, err := strconv.Atoi(valueStr)
 	if err != nil {
+		log.Printf("Error parsing interval value: %v", err)
 		return
 	}
 
@@ -133,7 +60,7 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Неверный формат времени! Используйте только s, h, d, w, m")
 		_, err := b.Send(msg)
 		if err != nil {
-			log.Println(err)
+			log.Println("Error sending message:", err)
 		}
 		return
 	}
@@ -142,7 +69,7 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Нет текста задачи!")
 		_, err := b.Send(msg)
 		if err != nil {
-			log.Println(err)
+			log.Println("Error sending message:", err)
 		}
 		return
 	}
@@ -156,20 +83,19 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 
 	taskJSON, err := json.Marshal(inputTask)
 	if err != nil {
-		log.Println("Error marshaling user: ", err)
+		log.Println("Error marshaling task: ", err)
 		return
 	}
 
 	resp, err := http.Post("http://telegram-reminder-bot:8000/create-task", "application/json", bytes.NewBuffer(taskJSON))
-	// resp, err := http.Post("http://localhost:8000/create-task", "application/json", bytes.NewBuffer(taskJSON))
 	if err != nil {
-		log.Println("Error sending user to server: ", err)
+		log.Println("Error sending task to server: ", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Println("Error saving user: ", resp.Status)
+		log.Println("Server error response: ", resp.Status)
 		return
 	}
 
@@ -184,20 +110,17 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("#Задача# принята. Напомню о ней через %d%s", value, duration))
 	_, err = b.Send(msg)
 	if err != nil {
-		log.Println(err)
+		log.Println("Error sending confirmation message:", err)
 	}
-
 }
 
 func (b *Bot) RestoreTasks() {
 	c := cron.New()
 
 	_, err := c.AddFunc("@every 1s", func() {
-
 		resp, err := http.Get("http://telegram-reminder-bot:8000/tasks")
-		// resp, err := http.Get("http://localhost:8000/tasks")
 		if err != nil {
-			log.Println("Error getting tasks from server: ", err)
+			log.Println("Error fetching tasks from server: ", err)
 			return
 		}
 		defer resp.Body.Close()
@@ -212,16 +135,15 @@ func (b *Bot) RestoreTasks() {
 		for _, task := range outputTasks {
 			_, err = b.Send(tgbotapi.NewMessage(task.ChatID, fmt.Sprintf("Напоминание для @%s:\n\n%s", task.UserName, task.Content)))
 			if err != nil {
-				log.Println(err)
+				log.Println("Error sending reminder:", err)
 			}
 		}
 	})
 	if err != nil {
-		log.Println(err)
+		log.Println("Error scheduling cron job:", err)
 	}
 
 	c.Start()
-
 }
 
 func (b *Bot) HandleMyChatMemberUpdate(myChatMember *tgbotapi.ChatMemberUpdated) {
@@ -241,18 +163,10 @@ func (b *Bot) HandleMyChatMemberUpdate(myChatMember *tgbotapi.ChatMemberUpdated)
 			msg := tgbotapi.NewMessage(myChatMember.Chat.ID, messageText)
 			_, err := b.Send(msg)
 			if err != nil {
-				log.Println(err)
+				log.Println("Error sending welcome message:", err)
 			}
-			/*
-				msg = tgbotapi.NewMessage(myChatMember.Chat.ID, "Пожалуйста, выберите опцию:")
-				msg.ReplyMarkup = menu
-				_, err = b.Send(msg)
-				if err != nil {
-					log.Println(err)
-				}
-			*/
 		default:
-
+			// Нужно что-то тут))
 		}
 	}
 }
