@@ -1,0 +1,81 @@
+Index: tg-bot/cmd/main.go
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package main\r\n\r\nimport (\r\n\t\"log\"\r\n\t\"tg-bot/models/bot\"\r\n\r\n\t\"os\"\r\n\t\"regexp\"\r\n\r\n\ttgbotapi \"github.com/go-telegram-bot-api/telegram-bot-api/v5\"\r\n\t\"github.com/joho/godotenv\"\r\n)\r\n\r\nfunc main() {\r\n\t// Загрузка переменных окружения из файла .env\r\n\terr := godotenv.Load()\r\n\tif err != nil {\r\n\t\tlog.Fatalf(\"Error loading .env file: %v\", err)\r\n\t}\r\n\r\n\t// Получение токена бота из переменной окружения\r\n\tbotToken := os.Getenv(\"TELEGRAM_BOT_TOKEN\")\r\n\tif botToken == \"\" {\r\n\t\tlog.Fatal(\"TELEGRAM_BOT_TOKEN is not set in .env file\")\r\n\t}\r\n\r\n\tbot := bot.NewBot(botToken)\r\n\r\n\tbot.Debug = true\r\n\r\n\tu := tgbotapi.NewUpdate(0)\r\n\tu.Timeout = 60\r\n\r\n\tupdates := bot.GetUpdatesChan(u)\r\n\r\n\tre := regexp.MustCompile(`@\\w+ ctrl (\\d+)([a-z]{1})`)\r\n\r\n\tmsgs := make(map[int64]string)\r\n\r\n\tfor update := range updates {\r\n\t\tif re.Match([]byte(update.Message.Text)) {\r\n\t\t\tgo bot.HandleCommand(update.Message, msgs[update.Message.From.ID])\r\n\t\t} else {\r\n\t\t\tmsgs[update.Message.From.ID] = update.Message.Text\r\n\t\t}\r\n\t}\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tg-bot/cmd/main.go b/tg-bot/cmd/main.go
+--- a/tg-bot/cmd/main.go	(revision 813905f35975d43a7c6e932b68c16acb36226214)
++++ b/tg-bot/cmd/main.go	(date 1728687079938)
+@@ -38,6 +38,9 @@
+ 	msgs := make(map[int64]string)
+ 
+ 	for update := range updates {
++		if update.Message == nil || update.Message.From == nil || update.Message.Text == "" {
++			continue
++		}
+ 		if re.Match([]byte(update.Message.Text)) {
+ 			go bot.HandleCommand(update.Message, msgs[update.Message.From.ID])
+ 		} else {
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"ALL\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"4028e366-0f0c-40e1-ade2-2878ba4a6b8a\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.env\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/.gitignore\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/modules.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/modules.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/telegram_reminder_bot.iml\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/Dockerfile\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/Makefile\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/README.md\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/cmd/main.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/configs/config.yml\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/go.mod\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/go.sum\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/handler/handlers.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/handler/response.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/handler/task.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/models/models.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/repository/postgres.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/repository/repository.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/repository/task_postgres.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/scheduler/scheduler.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/schema/000001_init.down.sql\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/schema/000001_init.up.sql\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/server/server.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/service/service.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/service/task.go\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/wait-for-postgres.sh\" beforeDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/work with db.txt\" beforeDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"GOROOT\" url=\"file://$PROJECT_DIR$/../../../pkg/mod/golang.org/toolchain@v0.0.1-go1.22.4.windows-amd64\" />\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\"><![CDATA[{\r\n  \"customColor\": \"\",\r\n  \"associatedIndex\": 7\r\n}]]></component>\r\n  <component name=\"ProjectId\" id=\"2nGQykU0MmPQHVFn9c6CfQ1CDmk\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"Go Build.go build tg-bot/cmd.executor\": \"Run\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"RunOnceActivity.go.formatter.settings.were.checked\": \"true\",\r\n    \"RunOnceActivity.go.migrated.go.modules.settings\": \"true\",\r\n    \"RunOnceActivity.go.modules.go.list.on.any.changes.was.set\": \"true\",\r\n    \"git-widget-placeholder\": \"develop\",\r\n    \"go.import.settings.migrated\": \"true\",\r\n    \"go.sdk.automatically.set\": \"true\",\r\n    \"last_opened_file_path\": \"C:/Users/LK10725\",\r\n    \"node.js.detected.package.eslint\": \"true\",\r\n    \"node.js.selected.package.eslint\": \"(autodetect)\",\r\n    \"nodejs_package_manager_path\": \"npm\"\r\n  }\r\n}]]></component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"go build tg-bot/cmd\" type=\"GoApplicationRunConfiguration\" factoryName=\"Go Application\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"telegram_reminder_bot.github\" />\r\n      <working_directory value=\"$PROJECT_DIR$/tg-bot\" />\r\n      <kind value=\"PACKAGE\" />\r\n      <package value=\"tg-bot/cmd\" />\r\n      <directory value=\"$PROJECT_DIR$\" />\r\n      <filePath value=\"$PROJECT_DIR$/tg-bot/cmd/main.go\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\"Go Build.go build tg-bot/cmd\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-gosdk-5df93f7ad4aa-df9ad98b711f-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-242.21829.220\" />\r\n        <option value=\"bundled-js-predefined-d6986cc7102b-7c0b70fcd90d-JavaScript-GO-242.21829.220\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n  <component name=\"VgoProject\">\r\n    <settings-migrated>true</settings-migrated>\r\n  </component>\r\n  <component name=\"XDebuggerManager\">\r\n    <breakpoint-manager>\r\n      <breakpoints>\r\n        <line-breakpoint enabled=\"true\" type=\"DlvLineBreakpoint\">\r\n          <url>file://$PROJECT_DIR$/tg-bot/models/bot/bot.go</url>\r\n          <line>25</line>\r\n          <option name=\"timeStamp\" value=\"1\" />\r\n        </line-breakpoint>\r\n        <line-breakpoint enabled=\"true\" type=\"DlvLineBreakpoint\">\r\n          <url>file://$PROJECT_DIR$/tg-bot/cmd/main.go</url>\r\n          <line>14</line>\r\n          <option name=\"timeStamp\" value=\"3\" />\r\n        </line-breakpoint>\r\n      </breakpoints>\r\n    </breakpoint-manager>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 813905f35975d43a7c6e932b68c16acb36226214)
++++ b/.idea/workspace.xml	(date 1728707572738)
+@@ -41,31 +41,31 @@
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+   </component>
+-  <component name="ProjectColorInfo"><![CDATA[{
+-  "customColor": "",
+-  "associatedIndex": 7
+-}]]></component>
++  <component name="ProjectColorInfo">{
++  &quot;customColor&quot;: &quot;&quot;,
++  &quot;associatedIndex&quot;: 7
++}</component>
+   <component name="ProjectId" id="2nGQykU0MmPQHVFn9c6CfQ1CDmk" />
+   <component name="ProjectViewState">
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "Go Build.go build tg-bot/cmd.executor": "Run",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+-    "git-widget-placeholder": "develop",
+-    "go.import.settings.migrated": "true",
+-    "go.sdk.automatically.set": "true",
+-    "last_opened_file_path": "C:/Users/LK10725",
+-    "node.js.detected.package.eslint": "true",
+-    "node.js.selected.package.eslint": "(autodetect)",
+-    "nodejs_package_manager_path": "npm"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;Go Build.go build tg-bot/cmd.executor&quot;: &quot;Run&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
++    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
++    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
++    &quot;last_opened_file_path&quot;: &quot;C:/Users/LK10725&quot;,
++    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
++    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
++    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="RunManager">
+     <configuration name="go build tg-bot/cmd" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+       <module name="telegram_reminder_bot.github" />

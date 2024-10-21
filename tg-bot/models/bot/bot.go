@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,10 +11,13 @@ import (
 	"tg-bot/models/tasks"
 	"time"
 
+	"github.com/robfig/cron/v3"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-/*
+var botMessage tgbotapi.Message
+
 var (
 	menu = tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
@@ -35,10 +37,22 @@ var (
 		),
 	)
 )
-*/
 
 type Bot struct {
 	*tgbotapi.BotAPI
+}
+
+type Reminder struct {
+	UserID   int64
+	Task     *tgbotapi.Message
+	Interval string
+	Duration string
+}
+
+func NewReminder(id int64) *Reminder {
+	return &Reminder{
+		UserID: id,
+	}
 }
 
 func NewBot(token string) *Bot {
@@ -49,60 +63,80 @@ func NewBot(token string) *Bot {
 	return &Bot{bot}
 }
 
-/*
-	func (b *Bot) MarkupHandler(chat tgbotapi.Chat, user tgbotapi.User, updates tgbotapi.UpdatesChannel) {
-		msg := tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, введите текст вашего напоминания", user.UserName))
-		_, err := b.Send(msg)
-		if err != nil {
-			log.Println(err)
-		}
+var reminders = make(map[int64]Reminder)
 
-		var taskText string
-		var time string
-		var quantity string
+func (b *Bot) CreateReminder(msg *tgbotapi.Message) {
+	reminders[msg.From.ID] = *NewReminder(msg.From.ID)
+	botMessageConfig := tgbotapi.NewMessage(msg.Chat.ID, fmt.Sprintf("@%s, введите текст вашего напоминания", msg.From.UserName))
 
-		re := regexp.MustCompile(`[shdwm]`)
-		reQuantity := regexp.MustCompile(`\d+`)
+	botMessage, _ = b.Send(botMessageConfig)
+}
 
-		for update := range updates {
-			if update.Message.Text != "" && update.Message.From.ID == user.ID {
-				if taskText == "" {
-					taskText = update.Message.Text
-					msg = tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, выберите единицу времени:", user.UserName))
-					msg.ReplyMarkup = timeKeyboard
-					_, err = b.Send(msg)
-					if err != nil {
-						log.Println(err)
-					}
-				} else if time == "" {
-					if re.MatchString(update.Message.Text) {
-						time = update.Message.Text
-						msg = tgbotapi.NewMessage(chat.ID, fmt.Sprintf("@%s, введите продолжительность (целым числом)", user.UserName))
-						_, err = b.Send(msg)
-						if err != nil {
-							log.Println(err)
-						}
-					}
-				} else if quantity == "" {
-					if reQuantity.MatchString(update.Message.Text) {
-						quantity = update.Message.Text
-						break
-					}
-				}
-			}
-		}
-
-		inputText := fmt.Sprintf("@%s ctrl %s%s", b.Self.UserName, quantity, time)
-		input := tgbotapi.Message{
-			Chat: &chat,
-			From: &user,
-			Text: inputText,
-		}
-
-		b.HandleCommand(&input, taskText)
+func (b *Bot) UpdateReminder(msg *tgbotapi.Message) bool {
+	reminder, exists := reminders[msg.From.ID]
+	if !exists {
+		return false
 	}
-*/
-func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
+
+	if msg.From.ID != reminder.UserID {
+		return false
+	}
+
+	if reminder.Task == nil {
+		b.DeleteMessage(&botMessage)
+
+		reminder.Task = msg
+		botMessageConfig := tgbotapi.NewMessage(msg.Chat.ID, fmt.Sprintf("@%s, введите интервал ожидания\n(целое число)", msg.From.UserName))
+		reminders[msg.From.ID] = reminder
+
+		botMessage, _ = b.Send(botMessageConfig)
+
+		b.DeleteMessage(msg)
+
+		return true
+
+	} else if reminder.Interval == "" {
+		b.DeleteMessage(&botMessage)
+
+		reminder.Interval = msg.Text
+		botMessageConfig := tgbotapi.NewMessage(msg.Chat.ID, fmt.Sprintf("@%s, выберите продолжительность:", msg.From.UserName))
+		botMessageConfig.ReplyMarkup = timeKeyboard
+
+		botMessage, _ = b.Send(botMessageConfig)
+		b.DeleteMessage(msg)
+
+		reminders[msg.From.ID] = reminder
+	}
+	return true
+}
+
+func (b *Bot) HandleCallbackQuery(callback *tgbotapi.CallbackQuery) {
+
+	reminder, exists := reminders[callback.From.ID]
+	if !exists || reminder.Task == nil {
+		return
+	}
+
+	b.DeleteMessage(&botMessage)
+
+	reminder.Duration = callback.Data
+	command := fmt.Sprintf("@%s ctrl %s%s", b.Self.UserName, reminder.Interval, reminder.Duration)
+	input := tgbotapi.Message{
+		Chat: callback.Message.Chat,
+		From: callback.From,
+		Text: command,
+	}
+
+	b.HandleCommand(&input, reminder.Task)
+	reminders[callback.From.ID] = Reminder{
+		UserID:   callback.From.ID,
+		Task:     nil,
+		Interval: "",
+		Duration: "",
+	}
+}
+
+func (b *Bot) HandleCommand(message *tgbotapi.Message, task *tgbotapi.Message) {
 	args := strings.Split(message.Text, " ")
 	if len(args) < 3 || args[1] != "ctrl" {
 		return
@@ -138,7 +172,7 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 		return
 	}
 
-	if taskText == "" {
+	if task == nil {
 		msg := tgbotapi.NewMessage(message.Chat.ID, "Нет текста задачи!")
 		_, err := b.Send(msg)
 		if err != nil {
@@ -150,7 +184,7 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 	inputTask := tasks.Task{
 		ChatID:       message.Chat.ID,
 		UserName:     message.From.UserName,
-		Content:      taskText,
+		Content:      task.Text,
 		ReminderTime: time.Now().Add(durationTime),
 	}
 
@@ -161,7 +195,7 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 	}
 
 	resp, err := http.Post("http://telegram-reminder-bot:8000/create-task", "application/json", bytes.NewBuffer(taskJSON))
-	// resp, err := http.Post("http://localhost:8000/create-task", "application/json", bytes.NewBuffer(taskJSON))
+	//resp, err := http.Post("http://localhost:8000/create-task", "application/json", bytes.NewBuffer(taskJSON))
 	if err != nil {
 		log.Println("Error sending user to server: ", err)
 		return
@@ -173,20 +207,25 @@ func (b *Bot) HandleCommand(message *tgbotapi.Message, taskText string) {
 		return
 	}
 
-	deleteConfig := tgbotapi.NewDeleteMessage(message.Chat.ID, message.MessageID)
-	_, err = b.Request(deleteConfig)
-	if err != nil {
-		log.Printf("Failed to delete message: %v", err)
-	} else {
-		log.Printf("Successfully deleted message %d in chat %d", message.MessageID, message.Chat.ID)
-	}
+	b.DeleteMessage(message)
+	b.DeleteMessage(task)
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("#Задача# принята. Напомню о ней через %d%s", value, duration))
+	msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("@%s, #Задача# принята. Напомню о ней через %d%s", message.From.UserName, value, duration))
 	_, err = b.Send(msg)
 	if err != nil {
 		log.Println(err)
 	}
 
+}
+
+func (b *Bot) DeleteMessage(msg *tgbotapi.Message) {
+	deleteConfig := tgbotapi.NewDeleteMessage(msg.Chat.ID, msg.MessageID)
+	_, err := b.Request(deleteConfig)
+	if err != nil {
+		log.Printf("Failed to delete message: %v", err)
+	} else {
+		log.Printf("Successfully deleted message %d in chat %d", msg.MessageID, msg.Chat.ID)
+	}
 }
 
 func (b *Bot) RestoreTasks() {
@@ -195,7 +234,7 @@ func (b *Bot) RestoreTasks() {
 	_, err := c.AddFunc("@every 1s", func() {
 
 		resp, err := http.Get("http://telegram-reminder-bot:8000/tasks")
-		// resp, err := http.Get("http://localhost:8000/tasks")
+		//resp, err := http.Get("http://localhost:8000/tasks")
 		if err != nil {
 			log.Println("Error getting tasks from server: ", err)
 			return
@@ -225,7 +264,7 @@ func (b *Bot) RestoreTasks() {
 }
 
 func (b *Bot) HandleMyChatMemberUpdate(myChatMember *tgbotapi.ChatMemberUpdated) {
-	if myChatMember.NewChatMember.User.UserName == b.Self.UserName {
+	if myChatMember.NewChatMember.User.ID == b.Self.ID {
 		switch myChatMember.NewChatMember.Status {
 		case "member":
 			messageText := fmt.Sprintf("Привет!"+
@@ -236,23 +275,24 @@ func (b *Bot) HandleMyChatMemberUpdate(myChatMember *tgbotapi.ChatMemberUpdated)
 				"\nЯ напомню вам о ней через указанное время."+
 				"\n\n[число] - интервал (целое число)"+
 				"\n[время] - продолжительность \n"+
-				"\n• s - секунды, \n• h -часы, \n• d - дни, \n• w - недели, \n• m - месяцы",
+				"\n• s - секунды, \n• h - часы, \n• d - дни, \n• w - недели, \n• m - месяцы",
 				b.Self.UserName, b.Self.UserName)
+
 			msg := tgbotapi.NewMessage(myChatMember.Chat.ID, messageText)
 			_, err := b.Send(msg)
 			if err != nil {
 				log.Println(err)
 			}
-			/*
-				msg = tgbotapi.NewMessage(myChatMember.Chat.ID, "Пожалуйста, выберите опцию:")
-				msg.ReplyMarkup = menu
-				_, err = b.Send(msg)
-				if err != nil {
-					log.Println(err)
-				}
-			*/
-		default:
 
+			msg = tgbotapi.NewMessage(myChatMember.Chat.ID, "Пожалуйста, выберите опцию:")
+			msg.ReplyMarkup = menu
+			_, err = b.Send(msg)
+			if err != nil {
+				log.Println(err)
+			}
+
+		default:
+			return
 		}
 	}
 }

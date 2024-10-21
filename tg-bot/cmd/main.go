@@ -1,15 +1,22 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os/signal"
 	"tg-bot/models/bot"
-	"tg-bot/models/responses"
 
 	"os"
 	"regexp"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
+)
+
+var (
+	msgs  = make(map[int64]*tgbotapi.Message)
+	flags = make(map[int64]bool)
+	re    = regexp.MustCompile(`@\w+ ctrl (\d+)([a-z])`)
 )
 
 func main() {
@@ -34,40 +41,62 @@ func main() {
 
 	updates := tgBot.GetUpdatesChan(u)
 
-	re := regexp.MustCompile(`@\w+ ctrl (\d+)([a-z])`)
-
-	msgs := make(map[int64]string)
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
 
 	tgBot.RestoreTasks()
 
-	for update := range updates {
-		defer responses.HandlePanic()
+	go receiveUpdates(ctx, tgBot, updates)
 
-		if update.MyChatMember != nil {
-			tgBot.HandleMyChatMemberUpdate(update.MyChatMember)
-			continue
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt)
+
+	<-stop
+	cancel()
+	log.Println("Bot stopped")
+}
+
+func receiveUpdates(ctx context.Context, tgBot *bot.Bot, updates tgbotapi.UpdatesChannel) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case update := <-updates:
+			handleUpdate(tgBot, update)
 		}
-
-		/*
-			if update.Message.Text == "Добавить напоминание" {
-				//go func(channel tgbotapi.UpdatesChannel, upd tgbotapi.Update) {
-				defer responses.HandlePanic()
-				tgBot.MarkupHandler(*update.Message.Chat, *update.Message.From, updates)
-				//}(updates, update)
-			}
-		*/
-
-		if re.Match([]byte(update.Message.Text)) {
-			go func() {
-				defer responses.HandlePanic()
-				tgBot.HandleCommand(update.Message, msgs[update.Message.From.ID])
-			}()
-		} else {
-			msgs[update.Message.From.ID] = update.Message.Text
-		}
-
 	}
+}
 
-	select {}
+func handleUpdate(tgBot *bot.Bot, update tgbotapi.Update) {
+	switch {
+	case update.Message != nil:
+		if update.Message.Text == "Добавить напоминание" {
+			tgBot.DeleteMessage(update.Message)
+			go tgBot.CreateReminder(update.Message)
+			flags[update.Message.From.ID] = true
 
+		} else if re.Match([]byte(update.Message.Text)) {
+			go tgBot.HandleCommand(update.Message, msgs[update.Message.From.ID])
+
+		} else if !flags[update.Message.From.ID] {
+			msgs[update.Message.From.ID] = update.Message
+
+		} else {
+			flags[update.Message.From.ID] = tgBot.UpdateReminder(update.Message)
+		}
+
+	case update.CallbackQuery != nil:
+		tgBot.HandleCallbackQuery(update.CallbackQuery)
+		flags[update.CallbackQuery.From.ID] = false
+
+	case update.MyChatMember != nil:
+		tgBot.HandleMyChatMemberUpdate(update.MyChatMember)
+		return
+
+	case update.EditedMessage != nil:
+		msgs[update.EditedMessage.From.ID] = update.EditedMessage
+
+	default:
+		return
+	}
 }
