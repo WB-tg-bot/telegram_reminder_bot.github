@@ -93,6 +93,9 @@ func handleUpdate(tgBot *bot.Bot, update tgbotapi.Update) {
 		tgBot.HandleMyChatMemberUpdate(update.MyChatMember)
 		return
 
+	case update.EditedMessage != nil:
+		msgs[update.EditedMessage.From.ID] = update.EditedMessage
+
 	default:
 		return
 	}

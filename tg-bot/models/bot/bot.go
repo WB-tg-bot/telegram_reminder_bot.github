@@ -43,13 +43,16 @@ type Bot struct {
 }
 
 type Reminder struct {
+	UserID   int64
 	Task     *tgbotapi.Message
 	Interval string
 	Duration string
 }
 
-func NewReminder() *Reminder {
-	return &Reminder{}
+func NewReminder(id int64) *Reminder {
+	return &Reminder{
+		UserID: id,
+	}
 }
 
 func NewBot(token string) *Bot {
@@ -63,7 +66,7 @@ func NewBot(token string) *Bot {
 var reminders = make(map[int64]Reminder)
 
 func (b *Bot) CreateReminder(msg *tgbotapi.Message) {
-	reminders[msg.From.ID] = *NewReminder()
+	reminders[msg.From.ID] = *NewReminder(msg.From.ID)
 	botMessageConfig := tgbotapi.NewMessage(msg.Chat.ID, fmt.Sprintf("@%s, введите текст вашего напоминания", msg.From.UserName))
 
 	botMessage, _ = b.Send(botMessageConfig)
@@ -72,6 +75,10 @@ func (b *Bot) CreateReminder(msg *tgbotapi.Message) {
 func (b *Bot) UpdateReminder(msg *tgbotapi.Message) bool {
 	reminder, exists := reminders[msg.From.ID]
 	if !exists {
+		return false
+	}
+
+	if msg.From.ID != reminder.UserID {
 		return false
 	}
 
@@ -104,12 +111,13 @@ func (b *Bot) UpdateReminder(msg *tgbotapi.Message) bool {
 }
 
 func (b *Bot) HandleCallbackQuery(callback *tgbotapi.CallbackQuery) {
-	b.DeleteMessage(&botMessage)
 
 	reminder, exists := reminders[callback.From.ID]
-	if !exists {
+	if !exists || reminder.Task == nil {
 		return
 	}
+
+	b.DeleteMessage(&botMessage)
 
 	reminder.Duration = callback.Data
 	command := fmt.Sprintf("@%s ctrl %s%s", b.Self.UserName, reminder.Interval, reminder.Duration)
@@ -121,6 +129,7 @@ func (b *Bot) HandleCallbackQuery(callback *tgbotapi.CallbackQuery) {
 
 	b.HandleCommand(&input, reminder.Task)
 	reminders[callback.From.ID] = Reminder{
+		UserID:   callback.From.ID,
 		Task:     nil,
 		Interval: "",
 		Duration: "",
