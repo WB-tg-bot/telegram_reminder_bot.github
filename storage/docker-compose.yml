@@ -6,7 +6,7 @@ services:
       context: ../tg-bot
       dockerfile: Dockerfile
     environment:
-      - TELEGRAM_BOT_TOKEN=7655607430:AAG1ek3Mb7chbYq382-JZcautPYc5A7t_qU
+      - TELEGRAM_BOT_TOKEN=7712218903:AAHbRsweP0-jsJqgyx7snFv9koyrntG2qaY
       - TZ=Europe/Moscow
     volumes:
       - ../tg-bot/.env:/app/.env

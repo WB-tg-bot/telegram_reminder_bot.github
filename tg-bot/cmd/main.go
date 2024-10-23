@@ -41,8 +41,7 @@ func main() {
 
 	updates := tgBot.GetUpdatesChan(u)
 
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := initContext()
 
 	tgBot.RestoreTasks()
 
@@ -56,13 +55,19 @@ func main() {
 	log.Println("Bot stopped")
 }
 
+func initContext() (context.Context, context.CancelFunc) {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	return ctx, cancel
+}
+
 func receiveUpdates(ctx context.Context, tgBot *bot.Bot, updates tgbotapi.UpdatesChannel) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case update := <-updates:
-			handleUpdate(tgBot, update)
+			go handleUpdate(tgBot, update)
 		}
 	}
 }
@@ -70,33 +75,41 @@ func receiveUpdates(ctx context.Context, tgBot *bot.Bot, updates tgbotapi.Update
 func handleUpdate(tgBot *bot.Bot, update tgbotapi.Update) {
 	switch {
 	case update.Message != nil:
-		if update.Message.Text == "Добавить напоминание" {
-			tgBot.DeleteMessage(update.Message)
-			go tgBot.CreateReminder(update.Message)
-			flags[update.Message.From.ID] = true
-
-		} else if re.Match([]byte(update.Message.Text)) {
-			go tgBot.HandleCommand(update.Message, msgs[update.Message.From.ID])
-
-		} else if !flags[update.Message.From.ID] {
-			msgs[update.Message.From.ID] = update.Message
-
-		} else {
-			flags[update.Message.From.ID] = tgBot.UpdateReminder(update.Message)
-		}
-
+		handleMessage(tgBot, update.Message)
 	case update.CallbackQuery != nil:
-		tgBot.HandleCallbackQuery(update.CallbackQuery)
-		flags[update.CallbackQuery.From.ID] = false
-
+		handleCallbackQuery(tgBot, update.CallbackQuery)
 	case update.MyChatMember != nil:
-		tgBot.HandleMyChatMemberUpdate(update.MyChatMember)
-		return
-
+		handleMyChatMemberUpdate(tgBot, update.MyChatMember)
 	case update.EditedMessage != nil:
-		msgs[update.EditedMessage.From.ID] = update.EditedMessage
-
+		handleEditedMessage(tgBot, update.EditedMessage)
 	default:
 		return
 	}
+}
+
+func handleMessage(tgBot *bot.Bot, message *tgbotapi.Message) {
+	if message.Text == "Добавить напоминание" {
+		tgBot.DeleteMessage(message)
+		go tgBot.CreateReminder(message)
+		flags[message.From.ID] = true
+	} else if re.Match([]byte(message.Text)) {
+		go tgBot.HandleCommand(message, msgs[message.From.ID])
+	} else if !flags[message.From.ID] {
+		msgs[message.From.ID] = message
+	} else {
+		flags[message.From.ID] = tgBot.UpdateReminder(message)
+	}
+}
+
+func handleCallbackQuery(tgBot *bot.Bot, callback *tgbotapi.CallbackQuery) {
+	tgBot.HandleCallbackQuery(callback)
+	flags[callback.From.ID] = false
+}
+
+func handleMyChatMemberUpdate(tgBot *bot.Bot, myChatMember *tgbotapi.ChatMemberUpdated) {
+	tgBot.HandleMyChatMemberUpdate(myChatMember)
+}
+
+func handleEditedMessage(tgBot *bot.Bot, editedMessage *tgbotapi.Message) {
+	msgs[editedMessage.From.ID] = editedMessage
 }
