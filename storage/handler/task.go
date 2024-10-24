@@ -10,11 +10,11 @@ import (
 func (h *Handler) createTask(c *gin.Context) {
 	var input models.Task
 	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		NewErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
 	if err := h.services.Task.CreateTask(input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		NewErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Task created"})
@@ -23,7 +23,7 @@ func (h *Handler) createTask(c *gin.Context) {
 func (h *Handler) Tasks(c *gin.Context) {
 	output, err := h.services.Task.Tasks()
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		NewErrorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
 	c.JSON(http.StatusOK, output)
