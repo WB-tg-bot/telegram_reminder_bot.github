@@ -6,7 +6,7 @@ services:
       context: ../tg-bot
       dockerfile: Dockerfile
     environment:
-      - TELEGRAM_BOT_TOKEN=7712218903:AAHbRsweP0-jsJqgyx7snFv9koyrntG2qaY
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TZ=Europe/Moscow
     volumes:
       - ../tg-bot/.env:/app/.env
@@ -17,13 +17,13 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    command: sh -c "./wait-for-postgres.sh db && migrate -path ./schema -database 'postgres://postgres:secret@db:5432/postgres?sslmode=disable' up && ./telegram-reminder-bot"
+    command: sh -c "./wait-for-postgres.sh db && migrate -path ./schema -database 'postgres://postgres:${DB_PASSWORD}@db:5432/postgres?sslmode=disable' up && ./telegram-reminder-bot"
     ports:
       - 5040:8000
     depends_on:
       - db
     environment:
-      - DB_PASSWORD=secret
+      - DB_PASSWORD=${DB_PASSWORD}
       - TZ=Europe/Moscow
     volumes:
       - ./.env:/app/.env
@@ -36,7 +36,7 @@ services:
     volumes:
       - ./.database/postgres/data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=secret
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
       - 5436:5432
     networks:
@@ -45,4 +45,3 @@ services:
 networks:
   app-network:
     driver: bridge
-

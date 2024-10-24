@@ -1,0 +1,5 @@
+url_create_task: "http://telegram-reminder-bot:8000/create-task"
+url_get_task: "http://telegram-reminder-bot:8000/tasks"
+
+#url_create_task: "http://localhost:8000/create-task"
+#url_get_task: "http://localhost:8000/tasks"

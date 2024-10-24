@@ -2,21 +2,14 @@ package main
 
 import (
 	"context"
-	"log"
-	"os/signal"
-	"tg-bot/models/bot"
-
-	"os"
-	"regexp"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
-)
-
-var (
-	msgs  = make(map[int64]*tgbotapi.Message)
-	flags = make(map[int64]bool)
-	re    = regexp.MustCompile(`@\w+ ctrl (\d+)([a-z])`)
+	"log"
+	"os"
+	"os/signal"
+	"tg-bot/internal/handlers"
+	"tg-bot/internal/models/bot"
+	"tg-bot/internal/services/bot_service"
 )
 
 func main() {
@@ -33,19 +26,22 @@ func main() {
 	}
 
 	tgBot := bot.NewBot(botToken)
+	botService := bot_service.NewBotService(tgBot)
 
-	tgBot.Debug = true
+	tgBot.(*bot.BotImpl).Debug = true
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
+
+	handler := handlers.NewHandler()
 
 	updates := tgBot.GetUpdatesChan(u)
 
 	ctx, cancel := initContext()
 
-	tgBot.RestoreTasks()
+	botService.RestoreTasks()
 
-	go receiveUpdates(ctx, tgBot, updates)
+	go receiveUpdates(ctx, botService, handler, updates)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
@@ -61,55 +57,13 @@ func initContext() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-func receiveUpdates(ctx context.Context, tgBot *bot.Bot, updates tgbotapi.UpdatesChannel) {
+func receiveUpdates(ctx context.Context, botService *bot_service.BotService, handler handlers.Handler, updates tgbotapi.UpdatesChannel) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case update := <-updates:
-			go handleUpdate(tgBot, update)
+			go handler.HandleUpdate(botService, update)
 		}
 	}
-}
-
-func handleUpdate(tgBot *bot.Bot, update tgbotapi.Update) {
-	switch {
-	case update.Message != nil:
-		handleMessage(tgBot, update.Message)
-	case update.CallbackQuery != nil:
-		handleCallbackQuery(tgBot, update.CallbackQuery)
-	case update.MyChatMember != nil:
-		handleMyChatMemberUpdate(tgBot, update.MyChatMember)
-	case update.EditedMessage != nil:
-		handleEditedMessage(tgBot, update.EditedMessage)
-	default:
-		return
-	}
-}
-
-func handleMessage(tgBot *bot.Bot, message *tgbotapi.Message) {
-	if message.Text == "Добавить напоминание" {
-		tgBot.DeleteMessage(message)
-		go tgBot.CreateReminder(message)
-		flags[message.From.ID] = true
-	} else if re.Match([]byte(message.Text)) {
-		go tgBot.HandleCommand(message, msgs[message.From.ID])
-	} else if !flags[message.From.ID] {
-		msgs[message.From.ID] = message
-	} else {
-		flags[message.From.ID] = tgBot.UpdateReminder(message)
-	}
-}
-
-func handleCallbackQuery(tgBot *bot.Bot, callback *tgbotapi.CallbackQuery) {
-	tgBot.HandleCallbackQuery(callback)
-	flags[callback.From.ID] = false
-}
-
-func handleMyChatMemberUpdate(tgBot *bot.Bot, myChatMember *tgbotapi.ChatMemberUpdated) {
-	tgBot.HandleMyChatMemberUpdate(myChatMember)
-}
-
-func handleEditedMessage(tgBot *bot.Bot, editedMessage *tgbotapi.Message) {
-	msgs[editedMessage.From.ID] = editedMessage
 }
